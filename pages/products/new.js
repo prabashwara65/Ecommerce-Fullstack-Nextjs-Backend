@@ -1,17 +1,15 @@
 import Layout from '@/Components/Layout';
-import Producteditform from '@/Components/productEditForm';
-import axios from 'axios';
-import { redirect } from 'next/dist/server/api-utils';
-import { Router, useRouter } from 'next/router';
-import React, { useState } from 'react';
+import ProductEditForm from '@/Components/ProductEditForm';
 
-const New = () => {
+
+const NewProduct = () => {
     
    return (
     <Layout>
-        <Producteditform />
+        <h1>New Product</h1>
+        <ProductEditForm />
     </Layout>
    )
 };
 
-export default New;
+export default NewProduct;
