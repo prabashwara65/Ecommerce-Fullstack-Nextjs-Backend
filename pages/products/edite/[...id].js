@@ -16,19 +16,18 @@ export default function EditProductPage(){
         }
         axios.get('/api/product?id='+id).then(response => {
             
-
            setProductInfo(response.data)
        
         });
     },[id]);
 
-    // if (!productInfo) {
-    //     return (
-    //       <Layout>
-    //         <div>Loading...</div>
-    //       </Layout>
-    //     );
-    //   }
+    if (!productInfo) {
+        return (
+          <Layout>
+            <div>Loading...</div>
+          </Layout>
+        );
+      }
     
   return (
     <Layout>
