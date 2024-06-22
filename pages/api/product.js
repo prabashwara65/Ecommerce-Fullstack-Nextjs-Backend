@@ -9,7 +9,13 @@ export default async function handler(req, res) {
     await mongooseConenct();
 
     if(method === 'GET'){
-        res.json(await Products.find())
+        if(req.query?.id){
+            res.json(await Products.findOne({_id:req.query.id}))
+        }
+        else{
+            res.json(await Products.find())
+        }
+        
     }
 
     if (method === 'POST') {
