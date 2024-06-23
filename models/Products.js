@@ -5,6 +5,7 @@ const ProductScehema = new Schema({
     title: {type: String , required: true},
     description: String,
     price: {type: Number , required: true},
+    images: [{type: String}],
 });
 
 const Products = mongoose.models.Products || mongoose.model('Products', ProductScehema);

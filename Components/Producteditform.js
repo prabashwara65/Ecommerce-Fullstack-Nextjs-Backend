@@ -1,23 +1,26 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import React, { useState } from 'react';
+import Spinner from './Spinner';
 
 export default function ProductEditForm({
     _id,
     title: existingTitle,
     description: existingDescription,
     price: existingPrice,
-    images,
+    images: existingImages,
 }) {
     const [title, setTitle] = useState(existingTitle || '');
     const [description, setDescription] = useState(existingDescription || '');
     const [price, setPrice] = useState(existingPrice || '');
+    const [images, setImages] = useState(existingImages || []);
     const [goToProduct, setGoToProduct] = useState(false);
+    const [isuploading , setIsUploading] = useState(false);
     const router = useRouter();
 
     async function createProduct(ev) {
         ev.preventDefault();
-        const data = { title, description, price };
+        const data = { title, description, price, images};
 
         try {
             if (_id) {
@@ -38,6 +41,7 @@ export default function ProductEditForm({
     async function uploadImages(ev) {
         const files = ev.target.files;
         if (files.length > 0) {
+            setIsUploading(true)
             const formData = new FormData();
             for (const file of files) {
                 formData.append('file', file);
@@ -48,6 +52,12 @@ export default function ProductEditForm({
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
+
+
+                });
+
+                setImages(oldImages => {
+                    return [...oldImages, ...res.data.links];
                 });
 
                 console.log('Upload response:', res.data);
@@ -56,6 +66,7 @@ export default function ProductEditForm({
                 console.error('Error uploading images:', error);
             }
         }
+        setIsUploading(false)
     }
 
     return (
@@ -69,9 +80,23 @@ export default function ProductEditForm({
             />
 
             <label>Photos</label>
-            <div>
-                {!images?.length && <div className='mb-2'>No photos in this product </div>}
-            </div>
+            <div className='mb-2 flex flex-wrap gap-1'>
+                
+                {/* {!images?.length && <div className='mb-2'>No photos in this product </div>} */}
+
+                {!!images?.length && images.map( link => (
+                    <div key={link} className='h-24'>
+                        <img src={link} alt='' className='rounded-lg'/>
+                    </div>
+                ))}
+
+                {isuploading && (
+                    <div className='h-24 items-center '>
+                        <Spinner />
+                    </div>
+                )}
+            
+            
 
             <label className='w-24 h-24 border text-center cursor-pointer flex items-center justify-center flex-col rounded-lg'>
                 <svg
@@ -91,6 +116,8 @@ export default function ProductEditForm({
                 <div>Upload</div>
                 <input type='file' className='hidden' onChange={uploadImages} />
             </label>
+
+            </div>
 
             <label>Description</label>
             <textarea
