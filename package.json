@@ -22,7 +22,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-spinners": "^0.13.8",
-    "sortablejs": "^1.15.2"
+    "sortablejs": "^1.15.2",
+    "sweetalert2-react-content": "^5.0.7"
   },
   "devDependencies": {
     "eslint": "^8",
