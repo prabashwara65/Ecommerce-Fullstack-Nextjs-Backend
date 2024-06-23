@@ -1,13 +1,9 @@
-import multiparty from 'multiparty'
-import { BucketType, PutObjectAclCommand, S3Client } from '@aws-sdk/client-s3';
-import { mongooseConnect } from '@/lib/mongoose';
+import multiparty from 'multiparty';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import mime from 'mime-types';
 
 export default async function handle(req, res) {
-    // await mongooseConnect();
-    // await isAdminRequest(req, res);
-
     const bucketName = 'ecommerce-next-osla';
 
     const form = new multiparty.Form();
@@ -25,31 +21,40 @@ export default async function handle(req, res) {
             accessKeyId: process.env.S3_ACCESS_KEY,
             secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
         },
-    })
+    });
 
     const links = [];
-    for (const file of files.file) {
-        const ext = file.originalFilename.split('.').pop()
-        const newFilename = Date.now() + '.' + ext;
-        console.log({ext , file})
-        console.log({newFilename})
-        console.log(file.path)
-        await client.send(new PutObjectAclCommand({
-            Bucket: bucketName,
-            Key: newFilename,
-            Body: fs.readFileSync(file.path),
-            ACL: 'public-read',
-            ContentType: mime.lookup(file.path) || 'application/octet-stream',
-        }))
-        const link = `https://${bucketName}.s3.amazonaws.com/${newFilename}`;
-        links.push(link)
+    try {
+        for (const file of files.file) {
+            const ext = file.originalFilename.split('.').pop();
+            const newFilename = Date.now() + '.' + ext;
+            console.log({ ext, file });
+            console.log({ newFilename });
+            console.log(file.path);
+
+            const fileStream = fs.createReadStream(file.path);
+            const uploadParams = {
+                Bucket: bucketName,
+                Key: newFilename,
+                Body: fileStream,
+                ACL: 'public-read',
+                ContentType: mime.lookup(file.path),
+            };
+
+            await client.send(new PutObjectCommand(uploadParams));
+
+            const link = `https://${bucketName}.s3.amazonaws.com/${newFilename}`;
+            links.push(link);
+        }
+
+        console.log(fields);
+        return res.status(200).json({ links });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        return res.status(500).json({ error: 'Error uploading file' });
     }
-
-    console.log(fields)
-    return res.json({links})
-
 }
 
 export const config = {
     api: { bodyParser: false },
-}
+};
