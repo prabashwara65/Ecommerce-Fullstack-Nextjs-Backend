@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import React from 'react'
 import { mongooseConenct } from '@/lib/mongoose';
 import Products from '@/models/Products';
+import { isAdminRequest } from './auth/[...nextauth]';
 
 export default async function handler(req, res) {
     const { method } = req;
