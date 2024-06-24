@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Spinner from './Spinner';
 
 export default function ProductEditForm({
@@ -9,18 +9,31 @@ export default function ProductEditForm({
     description: existingDescription,
     price: existingPrice,
     images: existingImages,
+    category: assignCategory,
+    properties: assignProperties,
 }) {
     const [title, setTitle] = useState(existingTitle || '');
+    const [productProperties, setProductProperties] = useState(assignProperties || {})
     const [description, setDescription] = useState(existingDescription || '');
+    const [category, setCategory] = useState(assignCategory || '');
     const [price, setPrice] = useState(existingPrice || '');
     const [images, setImages] = useState(existingImages || []);
     const [goToProduct, setGoToProduct] = useState(false);
-    const [isuploading , setIsUploading] = useState(false);
+    const [isuploading, setIsUploading] = useState(false);
+    const [categories, setCategories] = useState([]);
     const router = useRouter();
+
+    useEffect(() => {
+        axios.get('/api/categories').then(result => {
+            setCategories(result.data)
+        })
+    }, [])
 
     async function createProduct(ev) {
         ev.preventDefault();
-        const data = { title, description, price, images};
+        const data = { title, description, price, images, category,
+            properties:productProperties,
+        };
 
         try {
             if (_id) {
@@ -69,6 +82,29 @@ export default function ProductEditForm({
         setIsUploading(false)
     }
 
+    function setProductProp(propName, value) {
+        setProductProperties(prev => {
+            const newProductProps = { ...prev };
+            newProductProps[propName] = value;
+            return newProductProps;
+        });
+    }
+
+    const propertiesToFill = [];
+    const visitedCategories = new Set();
+
+    if (categories.length > 0 && category) {
+        let catInfo = categories.find(({ _id }) => _id === category);
+        while (catInfo && !visitedCategories.has(catInfo._id)) {
+            propertiesToFill.push(...catInfo.properties);
+            visitedCategories.add(catInfo._id);
+            catInfo = categories.find(({ _id }) => _id === catInfo?.parent?._id);
+        }
+    }
+
+    console.log({ propertiesToFill });
+
+
     return (
         <form onSubmit={createProduct}>
             <label>Product Name</label>
@@ -79,44 +115,63 @@ export default function ProductEditForm({
                 onChange={(ev) => setTitle(ev.target.value)}
             />
 
+            <label>Category</label>
+            <select value={category} onChange={ev => setCategory(ev.target.value)}>
+                <option value="" >Uncatogories</option>
+
+                {categories.length > 0 && categories.map(c => (
+                    <option value={c._id}>{c.name}</option>
+                ))}
+
+            </select>
+
+            {propertiesToFill.length > 0 && propertiesToFill.map(p => (
+                <div key={p.name} className='flex gap-1'>
+                    <div>{p.name}</div>
+                    <select
+                        value={productProperties[p.name] || ''}
+                        onChange={ev => setProductProp(p.name, ev.target.value)}
+                    >
+                        {p.values.map(v => (
+                            <option key={v} value={v}>{v}</option>
+                        ))}
+                    </select>
+                </div>
+            ))}
+
+
             <label>Photos</label>
             <div className='mb-2 flex flex-wrap gap-1'>
-                
-                {/* {!images?.length && <div className='mb-2'>No photos in this product </div>} */}
-
-                {!!images?.length && images.map( link => (
+                {!!images?.length && images.map(link => (
                     <div key={link} className='h-24'>
-                        <img src={link} alt='' className='rounded-lg'/>
+                        <img src={link} alt='' className='rounded-lg' />
                     </div>
                 ))}
 
                 {isuploading && (
-                    <div className='h-24 items-center '>
+                    <div className='h-24 items-center'>
                         <Spinner />
                     </div>
                 )}
-            
-            
 
-            <label className='w-24 h-24 border text-center cursor-pointer flex items-center justify-center flex-col rounded-lg'>
-                <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    strokeWidth={1.5}
-                    stroke='currentColor'
-                    className='size-6'
-                >
-                    <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        d='M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5'
-                    />
-                </svg>
-                <div>Upload</div>
-                <input type='file' className='hidden' onChange={uploadImages} />
-            </label>
-
+                <label htmlFor="file-upload" className='w-24 h-24 border text-center cursor-pointer flex items-center justify-center flex-col rounded-lg'>
+                    <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        strokeWidth={1.5}
+                        stroke='currentColor'
+                        className='size-6'
+                    >
+                        <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            d='M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5'
+                        />
+                    </svg>
+                    <div>Upload</div>
+                </label>
+                <input id="file-upload" type='file' className='hidden' onChange={uploadImages} />
             </div>
 
             <label>Description</label>

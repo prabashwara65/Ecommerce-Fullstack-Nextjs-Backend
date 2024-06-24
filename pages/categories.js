@@ -21,12 +21,16 @@ function Categories({ swal }) {
         ev.preventDefault();
         const data = {
             name,
-            parentCategory,
             properties: properties.map(p => ({
                 name: p.name,
                 values: p.values.split(','),
             })),
         };
+        
+        if (parentCategory) {
+            data.parentCategory = parentCategory;
+        }
+    
         if (editedCategory) {
             data._id = editedCategory._id;
             await axios.put('/api/categories', data);
@@ -39,6 +43,7 @@ function Categories({ swal }) {
         setProperties([]);
         fetchCategories();
     }
+    
     function editCategory(category) {
         setEditedCategory(category);
         setName(category.name);
