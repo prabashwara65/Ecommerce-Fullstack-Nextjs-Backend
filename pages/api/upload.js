@@ -3,6 +3,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import mime from 'mime-types';
 import { mongooseConenct } from '@/lib/mongoose';
+import { isAdminRequest } from './auth/[...nextauth]';
 const bucketName = 'ecommerce-next-osla';
 
 export default async function handle(req, res) {

@@ -10,6 +10,8 @@ const ProductScehema = new Schema({
     category: {type:mongoose.Types.ObjectId, ref:'Category'},
     properties: {type: Object},
 
+},{
+    timestamps: true,
 });
 
 const Products = mongoose.models.Products || mongoose.model('Products', ProductScehema);
