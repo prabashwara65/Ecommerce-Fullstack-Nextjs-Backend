@@ -3,7 +3,6 @@ import { MongoDBAdapter } from '@auth/mongodb-adapter'
 import NextAuth, { getServerSession } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 
-const adminEmails = ['it22560926@my.sliit.lk'];
 
   
   callbacks: {
