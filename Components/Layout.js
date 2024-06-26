@@ -5,14 +5,14 @@ import Logo from "./Logo";
 
 export default function Layout({ children }) {
 
-    const [showNav, setShowNav] = useState(false);
+
 
     const { data: session } = useSession()
 
     if (!session) {
         return (
             <div className="bg-bgGray w-screen h-screen flex items-center">
-                <div className="text-center w-full">
+                <div className="">
                     <button onClick={() => signIn('google')} className="bg-white p-2 px-4 rounded-lg"> Login with google</button>
                 </div>
             </div>
@@ -30,7 +30,7 @@ export default function Layout({ children }) {
                     </svg>
                 </button>
 
-                <div className="flex glow justify-center mr-6">
+                <div className="flex glow justify-center ">
                     <Logo />
                 </div>
 
